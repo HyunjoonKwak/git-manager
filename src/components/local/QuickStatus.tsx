@@ -91,9 +91,9 @@ export function QuickStatus({
 
   return (
     <Card className="p-2">
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-2">
         {/* 저장소 이름 & 브랜치 */}
-        <div className="flex items-center gap-2 min-w-[160px]">
+        <div className="flex items-center gap-2 min-w-[120px]">
           <div>
             <h2 className="font-semibold text-sm">{repoName}</h2>
             <DropdownMenu>
@@ -177,19 +177,22 @@ export function QuickStatus({
           {remoteStatus?.has_remote ? (
             <>
               {remoteStatus.ahead > 0 && (
-                <Badge variant="outline" className="gap-0.5 text-[10px] px-1 py-0 h-5 bg-blue-500/10 text-blue-600">
+                <Badge variant="outline" className="gap-0.5 text-[10px] px-1.5 py-0 h-5 bg-blue-500/10 text-blue-600" title="Push 필요">
                   <ArrowUp className="w-2.5 h-2.5" />
-                  {remoteStatus.ahead}
+                  {remoteStatus.ahead} push
                 </Badge>
               )}
               {remoteStatus.behind > 0 && (
-                <Badge variant="outline" className="gap-0.5 text-[10px] px-1 py-0 h-5 bg-orange-500/10 text-orange-600">
+                <Badge variant="outline" className="gap-0.5 text-[10px] px-1.5 py-0 h-5 bg-orange-500/10 text-orange-600" title="Pull 필요">
                   <ArrowDown className="w-2.5 h-2.5" />
-                  {remoteStatus.behind}
+                  {remoteStatus.behind} pull
                 </Badge>
               )}
               {remoteStatus.ahead === 0 && remoteStatus.behind === 0 && (
-                <Check className="w-3 h-3 text-green-500" />
+                <Badge variant="outline" className="gap-0.5 text-[10px] px-1.5 py-0 h-5 bg-green-500/10 text-green-600" title="동기화됨">
+                  <Check className="w-2.5 h-2.5" />
+                  동기화
+                </Badge>
               )}
             </>
           ) : (
@@ -204,10 +207,10 @@ export function QuickStatus({
         <div className="flex-1 min-w-0">
           {lastCommit ? (
             <div className="flex items-center gap-1.5">
-              <code className="px-1 py-0 rounded bg-muted text-[10px] font-mono">
+              <code className="px-1 py-0 rounded bg-muted text-[10px] font-mono flex-shrink-0">
                 {lastCommit.hash_short}
               </code>
-              <span className="truncate text-[11px] text-muted-foreground max-w-[150px]">
+              <span className="truncate text-[11px] text-muted-foreground" title={lastCommit.message}>
                 {lastCommit.message}
               </span>
             </div>

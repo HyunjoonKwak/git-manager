@@ -10,6 +10,7 @@ import {
   List,
   Key,
   ExternalLink,
+  RefreshCw,
 } from 'lucide-react'
 import {
   saveGitHubToken,
@@ -179,15 +180,31 @@ export function GitHubSidebar({ onViewRepos }: GitHubSidebarProps) {
             {user.login}
           </span>
         </div>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-6 w-6"
-          onClick={handleDisconnect}
-          title="연결 해제"
-        >
-          <LogOut className="w-3 h-3" />
-        </Button>
+        <div className="flex items-center gap-0.5">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-6 w-6"
+            onClick={() => savedToken && loadUserAndRepos(savedToken)}
+            disabled={loading}
+            title="새로고침"
+          >
+            {loading ? (
+              <Loader2 className="w-3 h-3 animate-spin" />
+            ) : (
+              <RefreshCw className="w-3 h-3" />
+            )}
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-6 w-6"
+            onClick={handleDisconnect}
+            title="연결 해제"
+          >
+            <LogOut className="w-3 h-3" />
+          </Button>
+        </div>
       </div>
 
       {/* 저장소 버튼 */}

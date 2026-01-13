@@ -299,59 +299,25 @@ export function RemoteSidebar({ repoPath, onRefresh, compact = false }: RemoteSi
                     원격 저장소 없음
                   </div>
                 ) : (
-                  <div className="space-y-0.5">
+                  <div className="space-y-1">
                     {remotes.map((remote) => (
                       <div
                         key={remote.name}
-                        className="flex items-center justify-between p-1 rounded hover:bg-muted"
+                        className="p-1.5 rounded hover:bg-muted"
                       >
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-1">
-                            <Cloud className="w-3 h-3 text-blue-500 flex-shrink-0" />
-                            <span className="text-[11px] font-medium">{remote.name}</span>
-                            <Badge variant="secondary" className="text-[9px] px-1 py-0 h-4">
-                              {branchesByRemote[remote.name]?.length || 0}
-                            </Badge>
-                          </div>
-                          <div className="text-[9px] text-muted-foreground truncate pl-4">
-                            {remote.fetch_url}
-                          </div>
+                        <div className="flex items-center gap-1 mb-0.5">
+                          <Cloud className="w-3 h-3 text-blue-500 flex-shrink-0" />
+                          <span className="text-[11px] font-medium">{remote.name}</span>
+                          <Badge variant="secondary" className="text-[9px] px-1 py-0 h-4">
+                            {branchesByRemote[remote.name]?.length || 0}
+                          </Badge>
                         </div>
-                        <div className="flex items-center ml-1">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-5 w-5"
-                            onClick={(e) => { e.stopPropagation(); handleFetch(remote.name); }}
-                            disabled={actionLoading === `fetch-${remote.name}`}
-                          >
-                            {actionLoading === `fetch-${remote.name}` ? (
-                              <Loader2 className="w-2.5 h-2.5 animate-spin" />
-                            ) : (
-                              <Download className="w-2.5 h-2.5" />
-                            )}
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-5 w-5"
-                            onClick={(e) => { e.stopPropagation(); openEditDialog(remote); }}
-                          >
-                            <Edit className="w-2.5 h-2.5" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-5 w-5 text-destructive hover:text-destructive"
-                            onClick={(e) => { e.stopPropagation(); handleRemoveRemote(remote.name); }}
-                            disabled={actionLoading === `remove-${remote.name}`}
-                          >
-                            {actionLoading === `remove-${remote.name}` ? (
-                              <Loader2 className="w-2.5 h-2.5 animate-spin" />
-                            ) : (
-                              <Trash2 className="w-2.5 h-2.5" />
-                            )}
-                          </Button>
+                        <div
+                          className="text-[10px] text-muted-foreground bg-muted/50 rounded px-1.5 py-1 break-all cursor-pointer hover:bg-muted"
+                          onClick={() => copyToClipboard(remote.fetch_url)}
+                          title="클릭하여 복사"
+                        >
+                          {remote.fetch_url}
                         </div>
                       </div>
                     ))}

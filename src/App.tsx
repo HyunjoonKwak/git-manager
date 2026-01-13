@@ -44,7 +44,7 @@ import {
 } from './components/ui/dialog'
 import { Input } from './components/ui/input'
 import { Label } from './components/ui/label'
-import { Loader2, FolderOpen, Plus, Trash2, GitBranch, Sun, Moon, Download, FolderPlus, AlertCircle } from 'lucide-react'
+import { Loader2, FolderOpen, Plus, Trash2, GitBranch, Sun, Moon, Download, FolderPlus, AlertCircle, RefreshCw } from 'lucide-react'
 import { useTheme } from './hooks/useTheme'
 import { open } from '@tauri-apps/plugin-dialog'
 import { listen } from '@tauri-apps/api/event'
@@ -338,20 +338,32 @@ function App() {
                     ? 'bg-primary/10 border border-primary/20'
                     : 'hover:bg-muted'
                 )}
-                onClick={() => selectRepo(repo.id)}
+                onClick={() => { selectRepo(repo.id); closeGitHubView(); }}
               >
                 <div className="flex items-center gap-2 min-w-0">
                   <FolderOpen className={cn('w-4 h-4 flex-shrink-0', selectedRepoId === repo.id ? 'text-primary' : 'text-muted-foreground')} />
                   <span className="truncate text-sm font-medium">{repo.name}</span>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-6 w-6 opacity-0 group-hover:opacity-100"
-                  onClick={e => { e.stopPropagation(); removeRepo(repo.id) }}
-                >
-                  <Trash2 className="w-3 h-3" />
-                </Button>
+                <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6"
+                    onClick={e => { e.stopPropagation(); selectRepo(repo.id); closeGitHubView(); fetchRepoInfo(); }}
+                    title="새로고침"
+                  >
+                    <RefreshCw className="w-3 h-3" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6"
+                    onClick={e => { e.stopPropagation(); removeRepo(repo.id) }}
+                    title="목록에서 제거"
+                  >
+                    <Trash2 className="w-3 h-3" />
+                  </Button>
+                </div>
               </div>
             ))}
             {repos.length === 0 && (
@@ -436,8 +448,8 @@ function App() {
           <>
             {/* Quick Status + 원격 저장소 (상단 고정) */}
             <div className="p-4 pb-0">
-              <div className="flex gap-4 items-start">
-                <div className="flex-1">
+              <div className="flex gap-3 items-start">
+                <div className="flex-1 min-w-0">
                   <QuickStatus
                     repoPath={selectedRepo.path}
                     repoName={repoInfo.name}
@@ -449,7 +461,7 @@ function App() {
                     onBranchChange={fetchRepoInfo}
                   />
                 </div>
-                <div className="w-64">
+                <div className="w-80 flex-shrink-0">
                   <RemoteSidebar repoPath={selectedRepo.path} onRefresh={fetchRepoInfo} compact />
                 </div>
               </div>
