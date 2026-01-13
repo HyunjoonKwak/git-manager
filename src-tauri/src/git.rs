@@ -280,6 +280,25 @@ pub fn push(path: &str) -> Result<(), String> {
 }
 
 #[tauri::command]
+pub fn push_to_remote(path: &str, remote: &str, branch: &str) -> Result<(), String> {
+    // 처음 push할 때 upstream 설정과 함께 push
+    use std::process::Command;
+
+    let output = Command::new("git")
+        .args(["push", "-u", remote, branch])
+        .current_dir(path)
+        .output()
+        .map_err(|e| e.to_string())?;
+
+    if !output.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        return Err(stderr.to_string());
+    }
+
+    Ok(())
+}
+
+#[tauri::command]
 pub fn pull(path: &str) -> Result<(), String> {
     use std::process::Command;
 

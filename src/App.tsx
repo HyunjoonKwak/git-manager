@@ -346,7 +346,7 @@ function App() {
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* GitHub 뷰 */}
         {githubViewMode ? (
-          <div className="flex-1 flex flex-col">
+          <div className="flex-1 flex flex-col overflow-hidden">
             <div className="p-4 border-b flex items-center justify-between">
               <Button variant="ghost" size="sm" onClick={closeGitHubView}>
                 ← 돌아가기

@@ -101,6 +101,10 @@ export async function push(path: string): Promise<void> {
   return invoke('push', { path })
 }
 
+export async function pushToRemote(path: string, remote: string, branch: string): Promise<void> {
+  return invoke('push_to_remote', { path, remote, branch })
+}
+
 export async function pull(path: string): Promise<void> {
   return invoke('pull', { path })
 }

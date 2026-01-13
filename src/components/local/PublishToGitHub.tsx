@@ -15,7 +15,7 @@ import {
 import { Github, Loader2, Upload, Check, AlertCircle } from 'lucide-react'
 import { toast } from 'sonner'
 import { getGitHubToken, createGitHubRepo } from '@/hooks/useGitHub'
-import { addRemote, push, getRemotes } from '@/hooks/useTauriGit'
+import { addRemote, pushToRemote, getRemotes, getBranches } from '@/hooks/useTauriGit'
 
 interface PublishToGitHubProps {
   repoPath: string
@@ -24,6 +24,45 @@ interface PublishToGitHubProps {
 }
 
 type Step = 'form' | 'creating' | 'adding-remote' | 'pushing' | 'done' | 'error'
+
+function parseGitHubError(error: string): string {
+  // 알려진 에러 패턴 직접 매칭
+  if (error.includes('name already exists')) {
+    return '이미 같은 이름의 저장소가 존재합니다. 다른 이름을 사용해주세요.'
+  }
+
+  if (error.includes('Repository creation failed')) {
+    return '저장소 생성에 실패했습니다.'
+  }
+
+  if (error.includes('Bad credentials') || error.includes('401')) {
+    return 'GitHub 인증이 만료되었습니다. 다시 연결해주세요.'
+  }
+
+  if (error.includes('rate limit') || error.includes('403')) {
+    return 'GitHub API 요청 한도를 초과했습니다. 잠시 후 다시 시도해주세요.'
+  }
+
+  // JSON에서 메시지 추출 시도
+  try {
+    const jsonStart = error.indexOf('{')
+    const jsonEnd = error.lastIndexOf('}')
+    if (jsonStart !== -1 && jsonEnd > jsonStart) {
+      const jsonStr = error.substring(jsonStart, jsonEnd + 1)
+      const parsed = JSON.parse(jsonStr)
+      if (parsed.errors?.[0]?.message) {
+        return parsed.errors[0].message
+      }
+      if (parsed.message) {
+        return parsed.message
+      }
+    }
+  } catch {
+    // JSON 파싱 실패 시 원본 반환
+  }
+
+  return error
+}
 
 export function PublishToGitHub({ repoPath, repoName, onSuccess }: PublishToGitHubProps) {
   const [open, setOpen] = useState(false)
@@ -95,17 +134,21 @@ export function PublishToGitHub({ repoPath, repoName, onSuccess }: PublishToGitH
       const remoteName = hasOrigin ? 'github' : 'origin'
       await addRemote(repoPath, remoteName, repo.clone_url)
 
-      // Step 3: Push
+      // Step 3: Push (현재 브랜치를 가져와서 upstream 설정과 함께 push)
       setStep('pushing')
-      await push(repoPath)
+      const branches = await getBranches(repoPath)
+      const currentBranch = branches.find(b => b.current)?.name || 'main'
+      await pushToRemote(repoPath, remoteName, currentBranch)
 
       setStep('done')
       toast.success('GitHub에 게시 완료!')
       onSuccess?.()
     } catch (err) {
       setStep('error')
-      setErrorMessage(String(err))
-      toast.error(`게시 실패: ${err}`)
+      const friendlyError = parseGitHubError(String(err))
+      const attemptedName = name.trim()
+      setErrorMessage(`${friendlyError}\n(시도한 이름: ${attemptedName})`)
+      toast.error(`게시 실패: ${friendlyError}`)
     } finally {
       setLoading(false)
     }
@@ -192,6 +235,10 @@ export function PublishToGitHub({ repoPath, repoName, onSuccess }: PublishToGitH
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="my-awesome-project"
+                autoCapitalize="off"
+                autoCorrect="off"
+                autoComplete="off"
+                spellCheck={false}
               />
             </div>
             <div className="space-y-2">
@@ -242,7 +289,7 @@ export function PublishToGitHub({ repoPath, repoName, onSuccess }: PublishToGitH
           <div className="py-4">
             {renderStepIndicator()}
             <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-md mt-2">
-              <p className="text-xs text-destructive">{errorMessage}</p>
+              <p className="text-xs text-destructive whitespace-pre-line">{errorMessage}</p>
             </div>
           </div>
         ) : (

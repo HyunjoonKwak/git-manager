@@ -22,6 +22,7 @@ pub fn run() {
             stage_all,
             commit,
             push,
+            push_to_remote,
             pull,
             fetch_remote,
             get_branches,
