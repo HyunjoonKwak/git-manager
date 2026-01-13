@@ -1,0 +1,34 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="512" height="512" rx="96" fill="url(#bg-gradient)"/>
+
+  <!-- Main branch line -->
+  <path d="M256 80 L256 432" stroke="#FFFFFF" stroke-width="28" stroke-linecap="round"/>
+
+  <!-- Branch line -->
+  <path d="M256 200 Q320 200 340 280 Q360 360 360 380" stroke="#4ADE80" stroke-width="24" stroke-linecap="round" fill="none"/>
+
+  <!-- Commit nodes -->
+  <!-- Top node -->
+  <circle cx="256" cy="120" r="36" fill="#FFFFFF"/>
+  <circle cx="256" cy="120" r="20" fill="#F97316"/>
+
+  <!-- Middle node (branch point) -->
+  <circle cx="256" cy="256" r="36" fill="#FFFFFF"/>
+  <circle cx="256" cy="256" r="20" fill="#F97316"/>
+
+  <!-- Bottom node -->
+  <circle cx="256" cy="392" r="36" fill="#FFFFFF"/>
+  <circle cx="256" cy="392" r="20" fill="#F97316"/>
+
+  <!-- Branch node -->
+  <circle cx="360" cy="380" r="32" fill="#FFFFFF"/>
+  <circle cx="360" cy="380" r="18" fill="#4ADE80"/>
+
+  <defs>
+    <linearGradient id="bg-gradient" x1="0" y1="0" x2="512" y2="512" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#1E293B"/>
+      <stop offset="100%" stop-color="#0F172A"/>
+    </linearGradient>
+  </defs>
+</svg>
