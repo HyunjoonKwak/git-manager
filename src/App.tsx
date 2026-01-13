@@ -44,7 +44,7 @@ import {
 } from './components/ui/dialog'
 import { Input } from './components/ui/input'
 import { Label } from './components/ui/label'
-import { Loader2, FolderOpen, Plus, Trash2, GitBranch, Sun, Moon, Download, FolderPlus } from 'lucide-react'
+import { Loader2, FolderOpen, Plus, Trash2, GitBranch, Sun, Moon, Download, FolderPlus, AlertCircle } from 'lucide-react'
 import { useTheme } from './hooks/useTheme'
 import { open } from '@tauri-apps/plugin-dialog'
 import { listen } from '@tauri-apps/api/event'
@@ -463,11 +463,37 @@ function App() {
               />
             </div>
           </>
-        ) : (
-          <div className="flex items-center justify-center flex-1 border rounded-lg m-6">
-            <p className="text-muted-foreground">저장소 정보를 가져오지 못했습니다</p>
+        ) : selectedRepo ? (
+          <div className="flex items-center justify-center flex-1 m-6">
+            <div className="text-center max-w-md">
+              <AlertCircle className="w-16 h-16 mx-auto text-muted-foreground/50 mb-4" />
+              <h2 className="text-xl font-semibold mb-2">Git 저장소가 아닙니다</h2>
+              <p className="text-muted-foreground mb-6">
+                선택한 폴더가 Git 저장소로 초기화되지 않았습니다.
+              </p>
+              <div className="flex flex-col gap-2">
+                <Button onClick={async () => {
+                  try {
+                    await initRepo(selectedRepo.path)
+                    toast.success('Git 저장소가 초기화되었습니다')
+                    fetchRepoInfo()
+                  } catch (err) {
+                    toast.error(`초기화 실패: ${err}`)
+                  }
+                }} className="w-full">
+                  <FolderPlus className="w-4 h-4 mr-2" />
+                  이 폴더를 Git 저장소로 초기화
+                </Button>
+                <Button variant="outline" onClick={() => {
+                  removeRepo(selectedRepo.id)
+                  toast.success('목록에서 제거되었습니다')
+                }} className="w-full">
+                  목록에서 제거
+                </Button>
+              </div>
+            </div>
           </div>
-        )}
+        ) : null}
       </div>
 
       {/* Clone 다이얼로그 */}

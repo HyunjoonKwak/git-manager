@@ -423,6 +423,17 @@ export function BranchGraph({ repoPath, onRefresh }: BranchGraphProps) {
     )
   }
 
+  if (commits.length === 0) {
+    return (
+      <Card className="h-full">
+        <CardContent className="py-8 text-center">
+          <p className="text-muted-foreground text-sm mb-2">아직 커밋이 없습니다</p>
+          <p className="text-xs text-muted-foreground">첫 번째 커밋을 만들어보세요</p>
+        </CardContent>
+      </Card>
+    )
+  }
+
   return (
     <Card className="h-full flex flex-col">
       <CardHeader className="py-1.5 px-2 flex-shrink-0">

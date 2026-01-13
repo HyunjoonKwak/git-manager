@@ -391,6 +391,12 @@ pub fn get_log(path: &str, max_count: usize) -> Result<Vec<CommitInfo>, String> 
 #[tauri::command]
 pub fn get_graph_log(path: &str, max_count: usize) -> Result<Vec<GraphCommit>, String> {
     let repo = Repository::open(path).map_err(map_git_error)?;
+
+    // 커밋이 없는 빈 저장소 체크
+    if repo.head().is_err() {
+        return Ok(Vec::new());
+    }
+
     let mut revwalk = repo.revwalk().map_err(map_git_error)?;
     revwalk.set_sorting(git2::Sort::TIME | git2::Sort::TOPOLOGICAL).map_err(map_git_error)?;
     revwalk.push_head().map_err(map_git_error)?;
