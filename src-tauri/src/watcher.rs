@@ -45,7 +45,11 @@ pub fn watch_repo(app: AppHandle, path: String) -> Result<(), String> {
                         {
                             return false;
                         }
-                        // .git/index.lock 등 임시 파일 제외
+                        // .git 폴더 내부 변경 제외 (git status 호출 시 index 파일 수정으로 인한 무한 루프 방지)
+                        if path_str.contains("/.git/") || path_str.contains("\\.git\\") {
+                            return false;
+                        }
+                        // .lock 등 임시 파일 제외
                         if path_str.contains(".lock") {
                             return false;
                         }
