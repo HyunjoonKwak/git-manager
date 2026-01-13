@@ -22,6 +22,7 @@ import {
   type GitHubRepo,
 } from '@/hooks/useGitHub'
 import { cn } from '@/lib/utils'
+import { open } from '@tauri-apps/plugin-shell'
 
 interface GitHubReposViewProps {
   repos: GitHubRepo[]
@@ -29,7 +30,7 @@ interface GitHubReposViewProps {
   onClose?: () => void
 }
 
-export function GitHubReposView({ repos, mode, onClose }: GitHubReposViewProps) {
+export function GitHubReposView({ repos, mode }: GitHubReposViewProps) {
   const [viewMode, setViewMode] = useState<'card' | 'list'>('card')
   const [searchQuery, setSearchQuery] = useState('')
   const [favorites, setFavorites] = useState<number[]>([])
@@ -233,7 +234,7 @@ export function GitHubReposView({ repos, mode, onClose }: GitHubReposViewProps) 
                       variant="ghost"
                       size="sm"
                       className="h-7 text-xs flex-1"
-                      onClick={() => window.open(repo.html_url, '_blank')}
+                      onClick={() => open(repo.html_url)}
                     >
                       <ExternalLink className="w-3 h-3 mr-1" />
                       열기
@@ -303,7 +304,7 @@ export function GitHubReposView({ repos, mode, onClose }: GitHubReposViewProps) 
                     variant="ghost"
                     size="icon"
                     className="h-7 w-7"
-                    onClick={() => window.open(repo.html_url, '_blank')}
+                    onClick={() => open(repo.html_url)}
                     title="GitHub에서 열기"
                   >
                     <ExternalLink className="w-3 h-3" />

@@ -348,8 +348,28 @@ function App() {
             </div>
           </div>
         ) : !selectedRepo ? (
-          <div className="flex items-center justify-center flex-1 border rounded-lg m-6">
-            <p className="text-muted-foreground">사이드바에서 저장소를 선택하세요</p>
+          <div className="flex items-center justify-center flex-1 m-6">
+            <div className="text-center max-w-md">
+              <GitBranch className="w-16 h-16 mx-auto text-muted-foreground/50 mb-4" />
+              <h2 className="text-xl font-semibold mb-2">Git Manager</h2>
+              <p className="text-muted-foreground mb-6">
+                로컬 Git 저장소를 관리하고 GitHub와 연동하세요
+              </p>
+              <div className="flex flex-col gap-2">
+                <Button onClick={handleAddRepo} className="w-full">
+                  <FolderOpen className="w-4 h-4 mr-2" />
+                  기존 저장소 열기
+                </Button>
+                <Button variant="outline" onClick={handleInitRepo} className="w-full">
+                  <FolderPlus className="w-4 h-4 mr-2" />
+                  새 저장소 초기화
+                </Button>
+                <Button variant="outline" onClick={() => setCloneDialogOpen(true)} className="w-full">
+                  <Download className="w-4 h-4 mr-2" />
+                  원격 저장소 복제
+                </Button>
+              </div>
+            </div>
           </div>
         ) : loading ? (
           <div className="flex items-center justify-center flex-1 border rounded-lg m-6">

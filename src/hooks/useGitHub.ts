@@ -59,11 +59,11 @@ export async function getGitHubFavorites(): Promise<number[]> {
 }
 
 export async function addGitHubFavorite(repoId: number): Promise<void> {
-  return invoke('add_github_favorite', { repoId })
+  return invoke('add_github_favorite', { repo_id: repoId })
 }
 
 export async function removeGitHubFavorite(repoId: number): Promise<void> {
-  return invoke('remove_github_favorite', { repoId })
+  return invoke('remove_github_favorite', { repo_id: repoId })
 }
 
 // 저장소 생성
