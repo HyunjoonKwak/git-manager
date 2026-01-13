@@ -340,6 +340,20 @@ function App() {
         <div className="border-t">
           <GitHubSidebar onViewRepos={handleViewGitHubRepos} />
         </div>
+
+        {/* 버전 정보 */}
+        <div className="border-t px-4 py-2 text-xs text-muted-foreground">
+          <div className="flex items-center justify-between">
+            <span>v{__APP_VERSION__}</span>
+            <span
+              className="font-mono cursor-pointer hover:text-foreground"
+              title={`커밋: ${__GIT_COMMIT_HASH__}\n빌드: ${__BUILD_TIME__}`}
+              onClick={() => navigator.clipboard.writeText(__GIT_COMMIT_HASH__)}
+            >
+              {__GIT_COMMIT_HASH__}
+            </span>
+          </div>
+        </div>
       </div>
 
       {/* 메인 콘텐츠 */}
