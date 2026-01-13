@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { useLocalReposStore } from './stores/useLocalReposStore'
 import {
   getRepoInfo,
@@ -197,19 +197,53 @@ function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedRepoId])
 
-  useEffect(() => {
-    let debounceTimer: ReturnType<typeof setTimeout> | null = null
+  // git-changed 이벤트 리스너 - ref를 사용해서 중복 등록 방지
+  const unlistenRef = useRef<(() => void) | null>(null)
+  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-    const unlisten = listen('git-changed', () => {
-      if (debounceTimer) clearTimeout(debounceTimer)
-      debounceTimer = setTimeout(() => {
-        fetchRepoInfo()
-      }, 300)
-    })
+  useEffect(() => {
+    let isMounted = true
+
+    const setupListener = async () => {
+      // 이전 리스너 정리
+      if (unlistenRef.current) {
+        unlistenRef.current()
+        unlistenRef.current = null
+      }
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current)
+        debounceTimerRef.current = null
+      }
+
+      // 새 리스너 등록
+      const unlisten = await listen('git-changed', () => {
+        if (!isMounted) return
+        if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current)
+        debounceTimerRef.current = setTimeout(() => {
+          if (isMounted) fetchRepoInfo()
+        }, 300)
+      })
+
+      if (isMounted) {
+        unlistenRef.current = unlisten
+      } else {
+        // 마운트 해제된 경우 바로 정리
+        unlisten()
+      }
+    }
+
+    setupListener()
 
     return () => {
-      if (debounceTimer) clearTimeout(debounceTimer)
-      unlisten.then(fn => fn())
+      isMounted = false
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current)
+        debounceTimerRef.current = null
+      }
+      if (unlistenRef.current) {
+        unlistenRef.current()
+        unlistenRef.current = null
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedRepoId])
