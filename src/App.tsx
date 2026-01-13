@@ -22,6 +22,7 @@ import {
   RemoteSidebar,
   GitHubSidebar,
   GitHubReposView,
+  PublishToGitHub,
 } from './components/local'
 import type { GitHubRepo } from './hooks/useGitHub'
 import { Toaster } from './components/ui/sonner'
@@ -396,6 +397,12 @@ function App() {
                 onClick={() => handleGitAction('push')}
                 loading={actionLoading === 'push'}
                 disabled={actionLoading !== null}
+              />
+              <div className="h-4 w-px bg-border mx-1" />
+              <PublishToGitHub
+                repoPath={selectedRepo.path}
+                repoName={repoInfo.name}
+                onSuccess={fetchRepoInfo}
               />
             </div>
 

@@ -195,3 +195,51 @@ pub fn remove_github_favorite(repo_id: i64) -> Result<(), String> {
         .map_err(|e| format!("즐겨찾기 저장 실패: {}", e))?;
     Ok(())
 }
+
+#[derive(Debug, Serialize)]
+struct CreateRepoRequest {
+    name: String,
+    description: Option<String>,
+    private: bool,
+    auto_init: bool,
+}
+
+#[tauri::command]
+pub async fn create_github_repo(
+    token: String,
+    name: String,
+    description: Option<String>,
+    private: bool,
+) -> Result<GitHubRepo, String> {
+    let client = reqwest::Client::new();
+
+    let request_body = CreateRepoRequest {
+        name,
+        description,
+        private,
+        auto_init: false, // 로컬 저장소를 push할 것이므로 초기화하지 않음
+    };
+
+    let response = client
+        .post("https://api.github.com/user/repos")
+        .header("Authorization", format!("Bearer {}", token))
+        .header("User-Agent", "git-manager-tauri")
+        .header("Accept", "application/vnd.github+json")
+        .json(&request_body)
+        .send()
+        .await
+        .map_err(|e| format!("API 요청 실패: {}", e))?;
+
+    if !response.status().is_success() {
+        let status = response.status();
+        let error_text = response.text().await.unwrap_or_default();
+        return Err(format!("GitHub API 오류 ({}): {}", status, error_text));
+    }
+
+    let repo: GitHubRepo = response
+        .json()
+        .await
+        .map_err(|e| format!("응답 파싱 실패: {}", e))?;
+
+    Ok(repo)
+}

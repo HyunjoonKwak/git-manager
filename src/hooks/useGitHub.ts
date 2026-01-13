@@ -65,3 +65,18 @@ export async function addGitHubFavorite(repoId: number): Promise<void> {
 export async function removeGitHubFavorite(repoId: number): Promise<void> {
   return invoke('remove_github_favorite', { repoId })
 }
+
+// 저장소 생성
+export async function createGitHubRepo(
+  token: string,
+  name: string,
+  description: string | null,
+  isPrivate: boolean
+): Promise<GitHubRepo> {
+  return invoke('create_github_repo', {
+    token,
+    name,
+    description,
+    private: isPrivate,
+  })
+}

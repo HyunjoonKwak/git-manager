@@ -79,6 +79,7 @@ pub fn run() {
             get_github_favorites,
             add_github_favorite,
             remove_github_favorite,
+            create_github_repo,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
