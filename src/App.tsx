@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useLocalReposStore } from './stores/useLocalReposStore'
 import {
   getRepoInfo,
@@ -51,8 +51,8 @@ import { listen } from '@tauri-apps/api/event'
 import { cn } from './lib/utils'
 
 function App() {
-  const { repos, selectedRepoId, addRepo, removeRepo, selectRepo, getSelectedRepo } = useLocalReposStore()
-  const selectedRepo = getSelectedRepo()
+  const { repos, selectedRepoId, addRepo, removeRepo, selectRepo } = useLocalReposStore()
+  const selectedRepo = useMemo(() => repos.find(r => r.id === selectedRepoId) || null, [repos, selectedRepoId])
   const [repoInfo, setRepoInfo] = useState<RepoInfo | null>(null)
   const [loading, setLoading] = useState(false)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
@@ -194,16 +194,25 @@ function App() {
         unwatchRepo(selectedRepo.path).catch(console.error)
       }
     }
-  }, [selectedRepoId, fetchRepoInfo, selectedRepo])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedRepoId])
 
   useEffect(() => {
+    let debounceTimer: ReturnType<typeof setTimeout> | null = null
+
     const unlisten = listen('git-changed', () => {
-      fetchRepoInfo()
+      if (debounceTimer) clearTimeout(debounceTimer)
+      debounceTimer = setTimeout(() => {
+        fetchRepoInfo()
+      }, 300)
     })
+
     return () => {
+      if (debounceTimer) clearTimeout(debounceTimer)
       unlisten.then(fn => fn())
     }
-  }, [fetchRepoInfo])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedRepoId])
 
   const handleGitAction = async (action: string) => {
     if (!selectedRepo) return
