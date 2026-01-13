@@ -1,0 +1,12 @@
+{
+  "$schema": "https://schemas.tauri.app/config/2/capabilities",
+  "identifier": "default",
+  "description": "Default capabilities for Git Manager",
+  "windows": ["main"],
+  "permissions": [
+    "core:default",
+    "shell:allow-open",
+    "dialog:default",
+    "dialog:allow-open"
+  ]
+}

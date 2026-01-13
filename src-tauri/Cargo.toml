@@ -1,0 +1,26 @@
+[package]
+name = "git-manager"
+version = "0.1.0"
+description = "Local Git Manager Desktop App"
+authors = ["you"]
+edition = "2021"
+
+[lib]
+name = "git_manager_lib"
+crate-type = ["lib", "cdylib", "staticlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+tauri-plugin-shell = "2"
+tauri-plugin-dialog = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+git2 = "0.19"
+notify = "7"
+dirs = "6"
+lazy_static = "1.4"
+reqwest = { version = "0.12", features = ["json"] }
+tokio = { version = "1", features = ["full"] }
