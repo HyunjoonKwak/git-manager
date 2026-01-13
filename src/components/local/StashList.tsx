@@ -36,7 +36,7 @@ interface StashEntry {
 export function StashList({ repoPath, onRefresh }: StashListProps) {
   const [stashes, setStashes] = useState<StashEntry[]>([])
   const [loading, setLoading] = useState(false)
-  const [expanded, setExpanded] = useState(true)
+  const [expanded, setExpanded] = useState(false)
   const [actionLoading, setActionLoading] = useState<number | null>(null)
 
   const fetchStashes = async () => {

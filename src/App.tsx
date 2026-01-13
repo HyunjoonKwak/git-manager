@@ -19,8 +19,11 @@ import {
   GitActionButton,
   StashList,
   AiSettings,
+  RemoteSidebar,
+  GitHubSidebar,
+  GitHubReposView,
 } from './components/local'
-import { RemoteSidebar } from './components/local/RemoteSidebar'
+import type { GitHubRepo } from './hooks/useGitHub'
 import { Toaster } from './components/ui/sonner'
 import { toast } from 'sonner'
 import { Button } from './components/ui/button'
@@ -59,6 +62,20 @@ function App() {
   const [cloneUrl, setCloneUrl] = useState('')
   const [cloneLoading, setCloneLoading] = useState(false)
   const [initLoading, setInitLoading] = useState(false)
+
+  // GitHub 뷰 상태
+  const [githubViewMode, setGithubViewMode] = useState<'all' | 'favorites' | null>(null)
+  const [githubRepos, setGithubRepos] = useState<GitHubRepo[]>([])
+
+  const handleViewGitHubRepos = (repos: GitHubRepo[], mode: 'all' | 'favorites') => {
+    setGithubRepos(repos)
+    setGithubViewMode(mode)
+  }
+
+  const closeGitHubView = () => {
+    setGithubViewMode(null)
+    setGithubRepos([])
+  }
 
   const handleAddRepo = async () => {
     try {
@@ -302,20 +319,34 @@ function App() {
           </div>
         </div>
 
-        {/* 원격 저장소 및 Stash (선택된 저장소가 있을 때만) */}
+        {/* Stash (선택된 저장소가 있을 때만) */}
         {selectedRepo && (
-          <div className="flex-1 overflow-auto border-t">
-            <RemoteSidebar repoPath={selectedRepo.path} onRefresh={fetchRepoInfo} />
-            <div className="p-2">
-              <StashList repoPath={selectedRepo.path} onRefresh={fetchRepoInfo} />
-            </div>
+          <div className="flex-1 overflow-auto border-t p-2">
+            <StashList repoPath={selectedRepo.path} onRefresh={fetchRepoInfo} />
           </div>
         )}
+
+        {/* GitHub 섹션 */}
+        <div className="border-t">
+          <GitHubSidebar onViewRepos={handleViewGitHubRepos} />
+        </div>
       </div>
 
       {/* 메인 콘텐츠 */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        {!selectedRepo ? (
+        {/* GitHub 뷰 */}
+        {githubViewMode ? (
+          <div className="flex-1 flex flex-col">
+            <div className="p-4 border-b flex items-center justify-between">
+              <Button variant="ghost" size="sm" onClick={closeGitHubView}>
+                ← 돌아가기
+              </Button>
+            </div>
+            <div className="flex-1 overflow-hidden">
+              <GitHubReposView repos={githubRepos} mode={githubViewMode} />
+            </div>
+          </div>
+        ) : !selectedRepo ? (
           <div className="flex items-center justify-center flex-1 border rounded-lg m-6">
             <p className="text-muted-foreground">사이드바에서 저장소를 선택하세요</p>
           </div>
@@ -325,18 +356,25 @@ function App() {
           </div>
         ) : repoInfo ? (
           <>
-            {/* Quick Status (상단 고정) */}
+            {/* Quick Status + 원격 저장소 (상단 고정) */}
             <div className="p-4 pb-0">
-              <QuickStatus
-                repoPath={selectedRepo.path}
-                repoName={repoInfo.name}
-                currentBranch={repoInfo.current_branch}
-                branches={repoInfo.branches}
-                files={repoInfo.status}
-                lastCommit={repoInfo.last_commit}
-                onRefresh={fetchRepoInfo}
-                onBranchChange={fetchRepoInfo}
-              />
+              <div className="flex gap-4 items-start">
+                <div className="flex-1">
+                  <QuickStatus
+                    repoPath={selectedRepo.path}
+                    repoName={repoInfo.name}
+                    currentBranch={repoInfo.current_branch}
+                    branches={repoInfo.branches}
+                    files={repoInfo.status}
+                    lastCommit={repoInfo.last_commit}
+                    onRefresh={fetchRepoInfo}
+                    onBranchChange={fetchRepoInfo}
+                  />
+                </div>
+                <div className="w-64">
+                  <RemoteSidebar repoPath={selectedRepo.path} onRefresh={fetchRepoInfo} compact />
+                </div>
+              </div>
             </div>
 
             {/* 빠른 액션 버튼 */}

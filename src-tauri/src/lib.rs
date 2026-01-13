@@ -1,9 +1,11 @@
 mod ai;
 mod git;
+mod github;
 mod watcher;
 
 use ai::*;
 use git::*;
+use github::*;
 use watcher::*;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -11,6 +13,7 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_fs::init())
         .invoke_handler(tauri::generate_handler![
             get_repo_info,
             get_status,
@@ -67,6 +70,15 @@ pub fn run() {
             // 저장소 초기화 및 복제
             init_repo,
             clone_repo,
+            // GitHub API
+            save_github_token,
+            get_github_token,
+            delete_github_token,
+            fetch_github_user,
+            fetch_github_repos,
+            get_github_favorites,
+            add_github_favorite,
+            remove_github_favorite,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

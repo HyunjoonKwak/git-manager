@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
+import { Card, CardContent } from '@/components/ui/card'
 import {
   Dialog,
   DialogContent,
@@ -57,9 +58,10 @@ import {
 interface RemoteSidebarProps {
   repoPath: string
   onRefresh?: () => void
+  compact?: boolean
 }
 
-export function RemoteSidebar({ repoPath, onRefresh }: RemoteSidebarProps) {
+export function RemoteSidebar({ repoPath, onRefresh, compact = false }: RemoteSidebarProps) {
   const [remotes, setRemotes] = useState<RemoteInfo[]>([])
   const [remoteBranches, setRemoteBranches] = useState<RemoteBranchInfo[]>([])
   const [loading, setLoading] = useState(true)
@@ -239,10 +241,191 @@ export function RemoteSidebar({ repoPath, onRefresh }: RemoteSidebarProps) {
   }, {} as Record<string, RemoteBranchInfo[]>)
 
   if (loading) {
+    if (compact) {
+      return (
+        <Card className="h-full">
+          <CardContent className="p-3 flex items-center justify-center h-full">
+            <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+          </CardContent>
+        </Card>
+      )
+    }
     return (
       <div className="p-4 flex items-center justify-center">
         <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
       </div>
+    )
+  }
+
+  // Compact 모드 - Accordion 형태
+  if (compact) {
+    return (
+      <Card className="p-2">
+        <Accordion type="single" collapsible>
+          <AccordionItem value="remotes" className="border-0">
+            <AccordionTrigger className="p-0 hover:no-underline [&>svg]:h-3 [&>svg]:w-3">
+              <div className="flex flex-col items-start w-full">
+                <div className="flex items-center gap-2">
+                  <Cloud className="w-4 h-4 text-blue-500" />
+                  <span className="text-sm font-semibold">원격 저장소</span>
+                </div>
+                <div className="flex items-center gap-2 h-6 text-muted-foreground">
+                  <span className="text-xs">
+                    {remotes.length > 0 ? remotes.map(r => r.name).join(', ') : '없음'}
+                  </span>
+                  <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+                    {remotes.length}
+                  </Badge>
+                </div>
+              </div>
+            </AccordionTrigger>
+            <AccordionContent className="pt-2 pb-0">
+              {/* 원격 저장소 목록 */}
+              <div className="max-h-32 overflow-auto border-t pt-2">
+                <div className="flex items-center justify-end gap-1 mb-1">
+                  <Button variant="ghost" size="icon" className="h-5 w-5" onClick={fetchData}>
+                    <RefreshCw className="w-3 h-3" />
+                  </Button>
+                  <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
+                    <DialogTrigger asChild>
+                      <Button variant="ghost" size="icon" className="h-5 w-5">
+                        <Plus className="w-3 h-3" />
+                      </Button>
+                    </DialogTrigger>
+                  </Dialog>
+                </div>
+                {remotes.length === 0 ? (
+                  <div className="text-center py-1 text-xs text-muted-foreground">
+                    원격 저장소 없음
+                  </div>
+                ) : (
+                  <div className="space-y-0.5">
+                    {remotes.map((remote) => (
+                      <div
+                        key={remote.name}
+                        className="flex items-center justify-between p-1 rounded hover:bg-muted"
+                      >
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-1">
+                            <Cloud className="w-3 h-3 text-blue-500 flex-shrink-0" />
+                            <span className="text-[11px] font-medium">{remote.name}</span>
+                            <Badge variant="secondary" className="text-[9px] px-1 py-0 h-4">
+                              {branchesByRemote[remote.name]?.length || 0}
+                            </Badge>
+                          </div>
+                          <div className="text-[9px] text-muted-foreground truncate pl-4">
+                            {remote.fetch_url}
+                          </div>
+                        </div>
+                        <div className="flex items-center ml-1">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-5 w-5"
+                            onClick={(e) => { e.stopPropagation(); handleFetch(remote.name); }}
+                            disabled={actionLoading === `fetch-${remote.name}`}
+                          >
+                            {actionLoading === `fetch-${remote.name}` ? (
+                              <Loader2 className="w-2.5 h-2.5 animate-spin" />
+                            ) : (
+                              <Download className="w-2.5 h-2.5" />
+                            )}
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-5 w-5"
+                            onClick={(e) => { e.stopPropagation(); openEditDialog(remote); }}
+                          >
+                            <Edit className="w-2.5 h-2.5" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-5 w-5 text-destructive hover:text-destructive"
+                            onClick={(e) => { e.stopPropagation(); handleRemoveRemote(remote.name); }}
+                            disabled={actionLoading === `remove-${remote.name}`}
+                          >
+                            {actionLoading === `remove-${remote.name}` ? (
+                              <Loader2 className="w-2.5 h-2.5 animate-spin" />
+                            ) : (
+                              <Trash2 className="w-2.5 h-2.5" />
+                            )}
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
+
+        {/* Dialog는 Card 외부로 이동하여 제대로 작동하게 함 */}
+        <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>원격 저장소 추가</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">이름</label>
+                <Input
+                  placeholder="origin"
+                  value={newRemoteName}
+                  onChange={(e) => setNewRemoteName(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">URL</label>
+                <Input
+                  placeholder="https://github.com/user/repo.git"
+                  value={newRemoteUrl}
+                  onChange={(e) => setNewRemoteUrl(e.target.value)}
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setAddDialogOpen(false)}>
+                취소
+              </Button>
+              <Button onClick={handleAddRemote} disabled={actionLoading === 'add'}>
+                {actionLoading === 'add' && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                추가
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* URL 편집 다이얼로그 */}
+        <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>URL 변경</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">새 URL</label>
+                <Input
+                  placeholder="https://github.com/user/repo.git"
+                  value={editUrl}
+                  onChange={(e) => setEditUrl(e.target.value)}
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setEditDialogOpen(false)}>
+                취소
+              </Button>
+              <Button onClick={handleEditRemote} disabled={actionLoading === 'edit'}>
+                {actionLoading === 'edit' && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                변경
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </Card>
     )
   }
 
